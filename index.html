@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TOOLS - IP Tracker by SHADOW JOKER</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nosifer&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    body, html {
+      height: 100%;
+      background: #0f0f0f;
+      font-family: 'Share Tech Mono', monospace;
+      color: #eee;
+      overflow: hidden;
+    }
+
+    /* Dark aura & fog pulse background */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background: radial-gradient(circle at center, #1a1a1a, #000000 80%);
+      animation: darkPulse 10s infinite ease-in-out;
+      opacity: 0.8;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-radial-gradient(circle at center, #39ff14 0%, transparent 10%);
+      z-index: -1;
+      mix-blend-mode: overlay;
+      animation: auraFlash 6s infinite alternate;
+      pointer-events: none;
+      opacity: 0.06;
+    }
+
+    @keyframes darkPulse {
+      0%, 100% { background-color: #0a0a0a; }
+      50% { background-color: #1b1b1b; }
+    }
+
+    @keyframes auraFlash {
+      0% { transform: scale(1); opacity: 0.04; }
+      100% { transform: scale(1.1); opacity: 0.08; }
+    }
+
+    canvas#bgCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      background: transparent;
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 480px;
+      margin: 3rem auto;
+      background: rgba(10,10,10,0.85);
+      padding: 2rem 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #39ff14;
+      border: 2px solid #39ff14;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-family: 'Nosifer', cursive;
+      font-size: 3rem;
+      color: #39ff14;
+      text-align: center;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 10px #39ff14;
+    }
+
+    .credit {
+      font-size: 0.9rem;
+      color: #777;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .credit a {
+      color: #39ff14;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: 2px solid #39ff14;
+      background: #121212;
+      color: #eee;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #ff0055;
+      box-shadow: 0 0 8px #ff0055;
+    }
+
+    button {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.75rem;
+      background: #ff0055;
+      border: none;
+      border-radius: 8px;
+      color: #eee;
+      font-size: 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background: #e6004c;
+    }
+
+    #result {
+      margin-top: 1.5rem;
+      background: #121212;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      line-height: 1.6;
+      box-shadow: inset 0 0 10px #39ff14;
+      min-height: 130px;
+      color: #aaffaa;
+    }
+
+    a.telegram-btn {
+      display: block;
+      text-align: center;
+      margin-top: 2rem;
+      background: #0088cc;
+      color: white;
+      font-weight: 700;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      box-shadow: 0 0 15px #0088cc;
+      transition: background-color 0.3s ease;
+    }
+
+    a.telegram-btn:hover {
+      background: #006699;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<div class="container">
+  <h1>TOOLS - IP TRACKER</h1>
+  <input type="text" id="ipInput" placeholder="Enter IP Address (e.g. 8.8.8.8)" />
+  <button onclick="trackIP()">TRACK</button>
+  <div id="result">Enter an IP address above and click TRACK.</div>
+
+  <a href="https://t.me/joinchat/yourtelegramlinkhere" target="_blank" class="telegram-btn" title="Join our Telegram Channel">
+    ▶️ Join Telegram Channel
+  </a>
+
+  <div class="credit">Developed by <a href="https://github.com/shadowjoker369" target="_blank">SHADOW JOKER</a></div>
+</div>
+
+<script>
+  // Matrix Effect
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+  const lettersArr = letters.split('');
+  const fontSize = 20;
+  const columns = Math.floor(width / fontSize);
+  const drops = [];
+  for(let i=0; i<columns; i++) {
+    drops[i] = Math.random() * -1000;
+  }
+
+  function draw() {
+    ctx.fillStyle = 'rgba(15,15,15,0.1)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#39ff14';
+    ctx.font = fontSize + 'px "Share Tech Mono"';
+    for(let i=0; i<drops.length; i++) {
+      const text = lettersArr[Math.floor(Math.random() * lettersArr.length)];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if(drops[i] * fontSize > height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i] += 0.75;
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // IP Tracker
+  async function trackIP() {
+    const ip = document.getElementById('ipInput').value.trim();
+    const resultDiv = document.getElementById('result');
+    if(!ip) {
+      resultDiv.innerHTML = '<p style="color:#ff0055;">Please enter an IP address.</p>';
+      return;
+    }
+    resultDiv.innerHTML = 'Loading...';
+    try {
+      const res = await fetch(`https://ipwho.is/${ip}`);
+      const data = await res.json();
+      if(data.success) {
+        resultDiv.innerHTML = `
+          <strong>IP:</strong> ${data.ip}<br />
+          <strong>Country:</strong> ${data.country}<br />
+          <strong>Region:</strong> ${data.region}<br />
+          <strong>City:</strong> ${data.city}<br />
+          <strong>ISP:</strong> ${data.connection.isp}<br />
+          <strong>Coordinates:</strong> ${data.latitude}, ${data.longitude}<br />
+          <strong>Google Maps:</strong> <a href="https://www.google.com/maps?q=${data.latitude},${data.longitude}" target="_blank" style="color:#39ff14;">View Map</a>
+        `;
+      } else {
+        resultDiv.innerHTML = `<p style="color:#ff0055;">Invalid IP or not found.</p>`;
+      }
+    } catch(e) {
+      resultDiv.innerHTML = `<p style="color:#ff0055;">Error fetching data.</p>`;
+    }
+  }
+
+  // Fog Effect
+  const fogCanvas = document.createElement('canvas');
+  fogCanvas.style.position = 'fixed';
+  fogCanvas.style.top = '0';
+  fogCanvas.style.left = '0';
+  fogCanvas.style.width = '100%';
+  fogCanvas.style.height = '100%';
+  fogCanvas.style.zIndex = '1';
+  fogCanvas.style.pointerEvents = 'none';
+  document.body.appendChild(fogCanvas);
+
+  const fogCtx = fogCanvas.getContext('2d');
+  let fw, fh;
+  function resizeFog() {
+    fw = fogCanvas.width = window.innerWidth;
+    fh = fogCanvas.height = window.innerHeight;
+  }
+  resizeFog();
+  window.addEventListener('resize', resizeFog);
+
+  let fogParticles = Array.from({ length: 30 }, () => ({
+    x: Math.random() * fw,
+    y: Math.random() * fh,
+    r: Math.random() * 60 + 40,
+    vx: Math.random() * 0.5 - 0.25,
+    vy: Math.random() * 0.5 - 0.25,
+    alpha: Math.random() * 0.1 + 0.05
+  }));
+
+  function drawFog() {
+    fogCtx.clearRect(0, 0, fw, fh);
+    fogParticles.forEach(p => {
+      fogCtx.beginPath();
+      fogCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      fogCtx.fillStyle = `rgba(200,200,200,${p.alpha})`;
+      fogCtx.fill();
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < -p.r) p.x = fw + p.r;
+      if (p.x > fw + p.r) p.x = -p.r;
+      if (p.y < -p.r) p.y = fh + p.r;
+      if (p.y > fh + p.r) p.y = -p.r;
+    });
+    requestAnimationFrame(drawFog);
+  }
+  drawFog();
+</script>
+
+</body>
+</html>
